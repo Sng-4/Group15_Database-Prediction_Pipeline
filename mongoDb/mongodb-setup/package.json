@@ -1,0 +1,23 @@
+{
+    "name": "heart-disease-mongodb",
+    "version": "1.0.0",
+    "description": "MongoDB implementation for heart disease database",
+    "main": "dist/index.js",
+    "scripts": {
+      "build": "tsc",
+      "start": "node dist/index.js",
+      "dev": "ts-node src/index.ts",
+      "setup": "npm run build && node dist/scripts/create-collections.js && node dist/scripts/create-indexes.js",
+      "seed": "node dist/scripts/seed-sample-data.js",
+      "clean": "rm -rf dist"
+    },
+    "dependencies": {
+      "mongodb": "^5.0.0"
+    },
+    "devDependencies": {
+      "@types/node": "^20.0.0",
+      "@types/mongodb": "^4.0.7",
+      "typescript": "^5.0.0",
+      "ts-node": "^10.9.0"
+    }
+  }

@@ -90,3 +90,50 @@ def delete_patient(patient_id: int):
         raise HTTPException(status_code=404, detail="Patient not found")
     return {"message": "Patient deleted successfully"}
 
+@app.post("/encounters/")
+def create_encounter(encounter: Encounter):
+    sql_cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (encounter.patient_id,))
+    if not sql_cursor.fetchone():
+        raise HTTPException(status_code=404, detail="Patient not found")
+    
+    sql_cursor.execute("""
+        INSERT INTO encounters (patient_id, visit_date, doctor, notes)
+        VALUES (%s, %s, %s, %s)
+    """, (encounter.patient_id, encounter.visit_date, encounter.doctor, encounter.notes))
+    sql_conn.commit()
+    
+    sql_cursor.execute("SELECT LAST_INSERT_ID() AS encounter_id")
+    new_id = sql_cursor.fetchone()["encounter_id"]
+    return {"encounter_id": new_id, "message": "Encounter created successfully"}
+
+@app.get("/encounters/{encounter_id}")
+def read_encounter(encounter_id: int):
+    sql_cursor.execute("SELECT * FROM encounters WHERE encounter_id=%s", (encounter_id,))
+    encounter = sql_cursor.fetchone()
+    if not encounter:
+        raise HTTPException(status_code=404, detail="Encounter not found")
+    return encounter
+
+@app.put("/encounters/{encounter_id}")
+def update_encounter(encounter_id: int, encounter: Encounter):
+    sql_cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (encounter.patient_id,))
+    if not sql_cursor.fetchone():
+        raise HTTPException(status_code=404, detail="Patient not found")
+    
+    sql_cursor.execute("""
+        UPDATE encounters
+        SET patient_id=%s, visit_date=%s, doctor=%s, notes=%s
+        WHERE encounter_id=%s
+    """, (encounter.patient_id, encounter.visit_date, encounter.doctor, encounter.notes, encounter_id))
+    sql_conn.commit()
+    if sql_cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Encounter not found")
+    return {"message": "Encounter updated successfully"}
+
+@app.delete("/encounters/{encounter_id}")
+def delete_encounter(encounter_id: int):
+    sql_cursor.execute("DELETE FROM encounters WHERE encounter_id=%s", (encounter_id,))
+    sql_conn.commit()
+    if sql_cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Encounter not found")
+    return {"message": "Encounter deleted successfully"}

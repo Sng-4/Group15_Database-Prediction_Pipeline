@@ -25,6 +25,23 @@ class Encounter(BaseModel):
     doctor: str
     notes: Optional[str] = None
 
+class ECGTest(BaseModel):
+    encounter_id: int
+    age: int = Field(..., ge=0)
+    sex: int = Field(..., ge=0, le=1)
+    cp: int = Field(..., ge=0)
+    trestbps: int = Field(..., ge=0)
+    chol: int = Field(..., ge=0)
+    fbs: int = Field(..., ge=0, le=1)
+    restecg: int = Field(..., ge=0)
+    thalach: int = Field(..., ge=0)
+    exang: int = Field(..., ge=0, le=1)
+    oldpeak: float = Field(..., ge=0)
+    slope: int = Field(..., ge=0)
+    ca: int = Field(..., ge=0)
+    thal: int = Field(..., ge=0)
+    target: int = Field(..., ge=0, le=1)
+
 @app.post("/patients/")
 def create_patient(patient: Patient):
     try:
@@ -72,3 +89,4 @@ def delete_patient(patient_id: int):
     if sql_cursor.rowcount == 0:
         raise HTTPException(status_code=404, detail="Patient not found")
     return {"message": "Patient deleted successfully"}
+

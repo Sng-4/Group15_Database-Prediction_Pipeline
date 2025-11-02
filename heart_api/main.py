@@ -10,7 +10,7 @@ app = FastAPI(title="Heart Disease SQL API")
 sql_conn = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="Naturi^06",
+    password="",
     database="heart_disease_db"
 )
 sql_cursor = sql_conn.cursor(dictionary=True)

@@ -68,6 +68,10 @@ def read_patient(patient_id: int):
         raise HTTPException(status_code=404, detail="Patient not found")
     return patient
 
+@app.get("/patients/{patient_id}")
+def get_patient(patient_id: int):
+    return read_patient(patient_id)
+
 @app.put("/patients/{patient_id}")
 def update_patient(patient_id: int, patient: Patient):
     sql_cursor.execute("""
@@ -162,6 +166,14 @@ def read_ecg_test(test_id: int):
     test = sql_cursor.fetchone()
     if not test:
         raise HTTPException(status_code=404, detail="ECG Test not found")
+    return test
+
+@app.get("/ecg_tests/latest")
+def read_latest_ecg_test():
+    sql_cursor.execute("SELECT * FROM ecg_tests ORDER BY test_id DESC LIMIT 1")
+    test = sql_cursor.fetchone()
+    if not test:
+        raise HTTPException(status_code=404, detail="No ECG Tests found")
     return test
 
 @app.put("/ecg_tests/{test_id}")

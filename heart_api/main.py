@@ -44,3 +44,25 @@ def read_patient(patient_id: int):
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
     return patient
+
+@app.put("/patients/{patient_id}")
+def update_patient(patient_id: int, patient: Patient):
+    sql_cursor.execute("""
+        UPDATE patients
+        SET first_name=%s, last_name=%s, dob=%s, gender=%s
+        WHERE patient_id=%s
+    """, (patient.first_name, patient.last_name, patient.dob, patient.gender, patient_id))
+    sql_conn.commit()
+
+    if sql_cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    return {"message": "Patient updated successfully"}
+
+@app.delete("/patients/{patient_id}")
+def delete_patient(patient_id: int):
+    sql_cursor.execute("DELETE FROM patients WHERE patient_id = %s;", (patient_id,))
+    sql_conn.commit()
+
+    if sql_cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    return {"message": "Patient deleted successfully"}

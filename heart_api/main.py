@@ -18,3 +18,29 @@ class Patient(BaseModel):
     last_name: str = Field(..., min_length=1, max_length=100)
     dob: date
     gender: str = Field(..., regex="^(Male|Female|Other)$") 
+
+@app.post("/patients/")
+def create_patient(patient: Patient):
+    try:
+        sql_cursor.callproc("insert_new_patient", [
+            patient.first_name,
+            patient.last_name,
+            patient.dob,
+            patient.gender
+        ])
+        sql_conn.commit()
+
+        sql_cursor.execute("SELECT LAST_INSERT_ID() AS patient_id;")
+        new_id = sql_cursor.fetchone()["patient_id"]
+
+        return {"patient_id": new_id, "message": "Patient created successfully"}
+    
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def read_patient(patient_id: int):
+    sql_cursor.execute("SELECT * FROM patients WHERE patient_id = %s;", (patient_id,))
+    patient = sql_cursor.fetchone()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    return patient

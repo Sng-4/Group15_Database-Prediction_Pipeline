@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from datetime import date
+from pydantic import BaseModel, Field, conint, confloat
+from typing import Optional
+from datetime import date, datetime
 import mysql.connector
 
 app = FastAPI(title="Heart Disease SQL API")
@@ -18,6 +19,11 @@ class Patient(BaseModel):
     last_name: str = Field(..., min_length=1, max_length=100)
     dob: date
     gender: str = Field(..., regex="^(Male|Female|Other)$") 
+class Encounter(BaseModel):
+    patient_id: int
+    visit_date: datetime
+    doctor: str
+    notes: Optional[str] = None
 
 @app.post("/patients/")
 def create_patient(patient: Patient):

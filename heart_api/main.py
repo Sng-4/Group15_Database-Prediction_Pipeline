@@ -18,7 +18,7 @@ class Patient(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
     dob: date
-    gender: str = Field(..., regex="^(Male|Female|Other)$") 
+    gender: str = Field(..., pattern="^(Male|Female|Other)$") 
 class Encounter(BaseModel):
     patient_id: int
     visit_date: datetime
@@ -137,3 +137,56 @@ def delete_encounter(encounter_id: int):
     if sql_cursor.rowcount == 0:
         raise HTTPException(status_code=404, detail="Encounter not found")
     return {"message": "Encounter deleted successfully"}
+
+@app.post("/ecg_tests/")
+def create_ecg_test(test: ECGTest):
+    sql_cursor.execute("SELECT * FROM encounters WHERE encounter_id=%s", (test.encounter_id,))
+    if not sql_cursor.fetchone():
+        raise HTTPException(status_code=404, detail="Encounter not found")
+    
+    sql_cursor.execute("""
+        INSERT INTO ecg_tests (encounter_id, age, sex, cp, trestbps, chol, fbs, restecg, thalach,
+                               exang, oldpeak, slope, ca, thal, target)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    """, (test.encounter_id, test.age, test.sex, test.cp, test.trestbps, test.chol, test.fbs,
+          test.restecg, test.thalach, test.exang, test.oldpeak, test.slope, test.ca, test.thal, test.target))
+    sql_conn.commit()
+    
+    sql_cursor.execute("SELECT LAST_INSERT_ID() AS test_id")
+    new_id = sql_cursor.fetchone()["test_id"]
+    return {"test_id": new_id, "message": "ECG Test created successfully"}
+
+@app.get("/ecg_tests/{test_id}")
+def read_ecg_test(test_id: int):
+    sql_cursor.execute("SELECT * FROM ecg_tests WHERE test_id=%s", (test_id,))
+    test = sql_cursor.fetchone()
+    if not test:
+        raise HTTPException(status_code=404, detail="ECG Test not found")
+    return test
+
+@app.put("/ecg_tests/{test_id}")
+def update_ecg_test(test_id: int, test: ECGTest):
+    sql_cursor.execute("SELECT * FROM encounters WHERE encounter_id=%s", (test.encounter_id,))
+    if not sql_cursor.fetchone():
+        raise HTTPException(status_code=404, detail="Encounter not found")
+    
+    sql_cursor.execute("""
+        UPDATE ecg_tests
+        SET encounter_id=%s, age=%s, sex=%s, cp=%s, trestbps=%s, chol=%s, fbs=%s,
+            restecg=%s, thalach=%s, exang=%s, oldpeak=%s, slope=%s, ca=%s, thal=%s, target=%s
+        WHERE test_id=%s
+    """, (test.encounter_id, test.age, test.sex, test.cp, test.trestbps, test.chol, test.fbs,
+          test.restecg, test.thalach, test.exang, test.oldpeak, test.slope, test.ca, test.thal, test.target, test_id))
+    sql_conn.commit()
+    
+    if sql_cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="ECG Test not found")
+    return {"message": "ECG Test updated successfully"}
+
+@app.delete("/ecg_tests/{test_id}")
+def delete_ecg_test(test_id: int):
+    sql_cursor.execute("DELETE FROM ecg_tests WHERE test_id=%s", (test_id,))
+    sql_conn.commit()
+    if sql_cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="ECG Test not found")
+    return {"message": "ECG Test deleted successfully"}

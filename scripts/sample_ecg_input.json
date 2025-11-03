@@ -1,0 +1,18 @@
+{
+  "test_id": 9999,
+  "encounter_id": 1234,
+  "age": 57,
+  "sex": 1,
+  "cp": 3,
+  "trestbps": 145,
+  "chol": 260,
+  "fbs": 1,
+  "restecg": 0,
+  "thalach": 148,
+  "exang": 0,
+  "oldpeak": 2.3,
+  "slope": 2,
+  "ca": 1,
+  "thal": 2,
+  "target": 1
+}
